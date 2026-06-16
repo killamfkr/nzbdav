@@ -47,6 +47,14 @@ docker run --rm -it \
 ```
 After starting the container, be sure to navigate to the Settings page on the UI to finish setting up your usenet connection settings.
 
+### CasaOS (Ubuntu home server)
+
+For one-click installation on [CasaOS](https://casaos.io/), see the [CasaOS install guide](docs/casaos-install.md). Import this repository as a custom app store URL:
+
+```
+https://github.com/killamfkr/nzbdav/archive/refs/heads/main.zip
+```
+
 <p align="center">
     <img width="600" alt="settings-page" src="https://github.com/user-attachments/assets/91175920-5a7b-4a93-906d-b8432f35c809" />
 </p>
@@ -60,6 +68,7 @@ You'll also want to set up a username and password for logging in to the webdav 
 # Comprehensive Setup Guide
 
 If you'd like to get the most out of NzbDav, check out the [comprehensive guide](docs/setup-guide.md) for detailed instructions covering:
+* **CasaOS:** One-click install on Ubuntu home servers — see [CasaOS install guide](docs/casaos-install.md).
 * **Docker Compose:** Full stack with Rclone sidecar and healthchecks.
 * **Performance Tuning:** Benchmarking WebDAV connection limits.
 * **Integrations:** Automating Radarr/Sonarr queue management and repairs.
