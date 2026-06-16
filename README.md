@@ -55,6 +55,14 @@ After starting the container, be sure to navigate to the Settings page on the UI
 curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo NZBDAV_ADMIN_PASS='your-admin-password' NZBDAV_WEBDAV_PASS='your-webdav-password' USENET_HOST='news.newshosting.com' USENET_USER='your-usenet-user' USENET_PASS='your-usenet-pass' bash
 ```
 
+### Unraid
+
+**One command** — see **[scripts/README-unraid.md](scripts/README-unraid.md)**.
+
+```bash
+NZBDAV_ADMIN_PASS='your-admin-password' NZBDAV_WEBDAV_PASS='your-webdav-password' USENET_HOST='news.newshosting.com' USENET_USER='your-usenet-user' USENET_PASS='your-usenet-pass' bash <(curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-unraid.sh)
+```
+
 <p align="center">
     <img width="600" alt="settings-page" src="https://github.com/user-attachments/assets/91175920-5a7b-4a93-906d-b8432f35c809" />
 </p>
@@ -68,7 +76,8 @@ You'll also want to set up a username and password for logging in to the webdav 
 # Comprehensive Setup Guide
 
 If you'd like to get the most out of NzbDav, check out the [comprehensive guide](docs/setup-guide.md) for detailed instructions covering:
-* **CasaOS:** One-click install on Ubuntu home servers — see [CasaOS install guide](docs/casaos-install.md).
+* **CasaOS:** One-click install — [scripts/README.md](scripts/README.md)
+* **Unraid:** One-click install — [scripts/README-unraid.md](scripts/README-unraid.md)
 * **Docker Compose:** Full stack with Rclone sidecar and healthchecks.
 * **Performance Tuning:** Benchmarking WebDAV connection limits.
 * **Integrations:** Automating Radarr/Sonarr queue management and repairs.

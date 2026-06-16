@@ -190,3 +190,8 @@ Then run the install command again.
 - Docker and Docker Compose
 - Root access (`sudo`)
 - Usenet provider account (can be added later via the UI)
+
+## See also
+
+- [Unraid installer](README-unraid.md)
+- [Full NzbDav setup guide](../docs/setup-guide.md)
