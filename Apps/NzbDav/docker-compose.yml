@@ -78,7 +78,7 @@ services:
       - /DATA/AppData/nzbdav/rclone.conf:/config/rclone/rclone.conf
     command:
       - mount
-      - nzbdav:
+      - "nzbdav:"
       - /mnt/remote/nzbdav
       - --allow-other
       - --links

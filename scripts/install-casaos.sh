@@ -93,16 +93,26 @@ prompt() {
 
 detect_ids() {
   if [[ -z "${PUID:-}" || -z "${PGID:-}" ]]; then
-    if id casaos >/dev/null 2>&1; then
-      PUID="$(id -u casaos)"
-      PGID="$(id -g casaos)"
+    local user=""
+    if [[ -n "${SUDO_USER:-}" && "$SUDO_USER" != "root" ]]; then
+      user="$SUDO_USER"
+    elif id casaos >/dev/null 2>&1; then
+      user="casaos"
     elif id ubuntu >/dev/null 2>&1; then
-      PUID="$(id -u ubuntu)"
-      PGID="$(id -g ubuntu)"
+      user="ubuntu"
+    fi
+    if [[ -n "$user" ]]; then
+      PUID="$(id -u "$user")"
+      PGID="$(id -g "$user")"
     else
       PUID="$(id -u)"
       PGID="$(id -g)"
     fi
+  fi
+  if [[ "$PUID" -eq 0 ]]; then
+    PUID=1000
+    PGID=1000
+    warn "Could not detect non-root user — defaulting PUID/PGID to 1000/1000"
   fi
   export PUID PGID
 }
@@ -287,7 +297,7 @@ services:
       - ${INSTALL_DIR}/rclone.conf:/config/rclone/rclone.conf
     command:
       - mount
-      - nzbdav:
+      - "nzbdav:"
       - /mnt/remote/nzbdav
       - --allow-other
       - --links
