@@ -1,92 +1,163 @@
 # Installing NzbDav on CasaOS
 
-This guide walks through installing NzbDav on an Ubuntu server running [CasaOS](https://casaos.io/).
+This guide installs NzbDav on an Ubuntu server running [CasaOS](https://casaos.io/) by pasting a Docker Compose file.
 
 ## Prerequisites
 
-- Ubuntu server with CasaOS installed ([installation guide](https://wiki.casaos.io/en/quick/start))
-- A usenet provider account (required for streaming content)
+- Ubuntu server with CasaOS installed
+- A usenet provider account
 
-## One-click install
+## Install via Compose import
 
-### Step 1: Add the NzbDav app store
+### Step 1: Open the custom app installer
 
-1. Log in to your CasaOS dashboard (usually `http://<your-server-ip>`).
+1. Log in to your CasaOS dashboard (`http://<your-server-ip>`).
 2. Open **App Store**.
-3. Click the **⋮** menu in the top-right corner.
-4. Select **Import a Zip or URL**.
-5. Enter the following URL and confirm:
+3. Click **Install a customized app** (or **Custom Install**).
+4. Click the **Import** button in the top-right corner of the compose editor.
 
-   ```
-   https://github.com/killamfkr/nzbdav/archive/refs/heads/main.zip
-   ```
+### Step 2: Paste the compose file
 
-CasaOS downloads the app store bundle from this repository. **NzbDav** appears in your available apps.
+Copy the compose file from this URL and paste it into the text box:
 
-### Step 2: Install NzbDav
+```
+https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml
+```
 
-1. Search for **NzbDav** in the App Store.
-2. Click **Install**.
-3. Review the pre-install notes (first-time setup steps).
-4. Accept the default settings or adjust:
-   - **Web UI port** — defaults to `3000` if available
-   - **PUID / PGID** — usually `1000` on CasaOS
-5. Click **Install** and wait for the container to start.
+Or open that link in a browser, copy all the YAML, and paste it into CasaOS.
+
+Click **Submit** / **OK**, then **Install**.
 
 ### Step 3: First-time configuration
 
-1. Open NzbDav from the CasaOS dashboard (or browse to `http://<your-server-ip>:3000`).
+1. Open NzbDav from the CasaOS dashboard (or go to `http://<your-server-ip>:3000`).
 2. **Create admin account** — set your login username and password.
 3. **Usenet settings** (`Settings` → `Usenet`):
    - Host, port, username, and password from your usenet provider
    - Set max connections to your provider's limit
 4. **WebDAV settings** (`Settings` → `WebDAV`):
-   - Set a WebDAV username and password (used by Rclone and other clients)
+   - Set a WebDAV username and password
 
-Your NzbDav instance is ready for basic use.
+## Copy-paste compose file
 
-## Data locations on CasaOS
+If you prefer to copy directly from here:
+
+```yaml
+name: nzbdav
+services:
+  nzbdav:
+    cpu_shares: 90
+    container_name: nzbdav
+    deploy:
+      resources:
+        reservations:
+          memory: "512M"
+    environment:
+      PGID: $PGID
+      PUID: $PUID
+      TZ: $TZ
+    healthcheck:
+      test: curl -f http://localhost:3000/health || exit 1
+      interval: 1m
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+    image: nzbdav/nzbdav:0.6.4
+    labels:
+      icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
+    network_mode: bridge
+    ports:
+      - target: 3000
+        published: "3000"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /DATA/AppData/nzbdav/config
+        target: /config
+      - type: bind
+        source: /DATA/remote
+        target: /mnt
+    x-casaos:
+      envs:
+        - container: TZ
+          description:
+            en_US: Time zone
+        - container: PUID
+          description:
+            en_US: User ID
+        - container: PGID
+          description:
+            en_US: Group ID
+      ports:
+        - container: "3000"
+          description:
+            en_US: Web UI and WebDAV port
+      volumes:
+        - container: /config
+          description:
+            en_US: Config and database
+        - container: /mnt
+          description:
+            en_US: Rclone mount point
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  author: NzbDav
+  category: Media
+  description:
+    en_US: WebDAV server for streaming usenet content. SABnzbd-compatible API for Sonarr/Radarr.
+  developer: NzbDav
+  icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
+  index: /
+  main: nzbdav
+  port_map: "3000"
+  tagline:
+    en_US: Stream usenet content over WebDAV without local storage
+  title:
+    en_US: NzbDav
+  version: "0.6.4"
+```
+
+> **Port already in use?** Change `published: "3000"` to another port (e.g. `"3001"`) and update `port_map: "3001"` at the bottom.
+
+## Data locations
 
 | Path on server | Purpose |
 |---|---|
 | `/DATA/AppData/nzbdav/config` | Settings, database, and persistent config |
-| `/DATA/remote` | Mount point for Rclone remote storage (`/mnt` inside container) |
+| `/DATA/remote` | Rclone mount point (`/mnt` inside the container) |
 
-Config survives app restarts and reinstalls as long as you keep the **user data** option enabled when uninstalling.
+CasaOS creates these folders on first start. Config is kept if you uninstall with **keep user data** enabled.
 
-## Integrating with Radarr, Sonarr, and Plex
+## Radarr / Sonarr / Plex integration
 
-For the full "infinite library" setup with Rclone sidecar, symlink folders, and media server integration, follow the [comprehensive setup guide](setup-guide.md). Key points for CasaOS:
+For the full infinite-library setup with Rclone, see the [comprehensive setup guide](setup-guide.md).
 
-- Use `/DATA/remote` on the host (mapped to `/mnt` in the container) for Rclone mounts.
-- Point Radarr/Sonarr download client to NzbDav's SABnzbd-compatible API at `http://<server-ip>:3000`.
-- See Phase 2–4 of the setup guide for Rclone and Arr configuration.
+- Use `/DATA/remote` on the host for Rclone mounts
+- Point Radarr/Sonarr to NzbDav at `http://<server-ip>:3000` as a SABnzbd download client
 
-## Updating NzbDav
+## Updating
 
-1. In CasaOS, open the NzbDav app settings.
-2. Check for updates in the App Store, or edit the image tag in the compose file to a newer version (e.g. `nzbdav/nzbdav:0.6.4`).
-3. Restart the app.
+1. Open the NzbDav app in CasaOS → **Settings** → **Compose**.
+2. Change the image tag (e.g. `nzbdav/nzbdav:0.6.4` → newer version).
+3. Save and restart the app.
 
 ## Troubleshooting
 
 | Issue | Solution |
 |---|---|
-| App won't start | Check logs in CasaOS → NzbDav → Logs. Ensure port 3000 is not in use. |
-| Permission errors on config | Verify PUID/PGID match your CasaOS user (`id` in SSH). |
-| Can't connect to usenet | Double-check provider host, port `563` (SSL), and credentials in Settings. |
-| Radarr/Sonarr can't reach NzbDav | Use the server LAN IP and the port shown in CasaOS (not `localhost` from other containers unless on the same Docker network). |
+| App won't start | Check logs in CasaOS. Ensure port 3000 is free or change the published port. |
+| Permission errors | Run `id` over SSH and match PUID/PGID in the compose file if needed. |
+| Blank tile / no icon | The `labels.icon` line sets the dashboard icon; check your server can reach GitHub. |
+| Radarr/Sonarr can't connect | Use the server LAN IP, not `localhost`, from other containers. |
 
-## Manual install (without App Store)
-
-If you prefer SSH, copy the compose file and run it directly:
+## SSH install (alternative)
 
 ```bash
 mkdir -p /DATA/AppData/nzbdav/config /DATA/remote
-curl -fsSL -o /DATA/AppData/casaos/apps/nzbdav/docker-compose.yml \
+curl -fsSL -o /tmp/nzbdav-compose.yml \
   https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml
-cd /DATA/AppData/casaos/apps/nzbdav
-docker compose up -d
+docker compose -f /tmp/nzbdav-compose.yml up -d
 ```
-
-Then import or manage the app from the CasaOS UI.

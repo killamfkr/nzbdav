@@ -18,15 +18,17 @@ services:
       start_period: 30s
       timeout: 10s
     image: nzbdav/nzbdav:0.6.4
+    labels:
+      icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
     network_mode: bridge
     ports:
       - target: 3000
-        published: ${WEBUI_PORT:-3000}
+        published: "3000"
         protocol: tcp
     restart: unless-stopped
     volumes:
       - type: bind
-        source: /DATA/AppData/$AppID/config
+        source: /DATA/AppData/nzbdav/config
         target: /config
       - type: bind
         source: /DATA/remote
@@ -36,29 +38,23 @@ services:
         - container: TZ
           description:
             en_US: Time zone for logs and scheduled tasks.
-            zh_CN: 时区
         - container: PUID
           description:
             en_US: User ID that runs NzbDav inside the container.
-            zh_CN: 运行 NzbDav 的用户 ID
         - container: PGID
           description:
             en_US: Group ID that runs NzbDav inside the container.
-            zh_CN: 运行 NzbDav 的用户组 ID
       ports:
         - container: "3000"
           description:
             en_US: NzbDav web UI and WebDAV port
-            zh_CN: NzbDav 网页界面和 WebDAV 端口
       volumes:
         - container: /config
           description:
             en_US: NzbDav configuration and database.
-            zh_CN: NzbDav 配置和数据库目录
         - container: /mnt
           description:
             en_US: Mount point for Rclone remote storage (used with Radarr/Sonarr).
-            zh_CN: Rclone 远程存储挂载点（用于 Radarr/Sonarr）
 x-casaos:
   architectures:
     - amd64
@@ -67,44 +63,28 @@ x-casaos:
   category: Media
   description:
     en_US: |
-      NzbDav is a WebDAV server that lets you mount and browse NZB files as a virtual file system without downloading them first. It provides a SABnzbd-compatible API and integrates with Sonarr, Radarr, Plex, and Jellyfin so you can stream usenet content directly from your provider.
+      NzbDav is a WebDAV server that lets you mount and browse NZB files as a virtual file system without downloading them first. It provides a SABnzbd-compatible API and integrates with Sonarr, Radarr, Plex, and Jellyfin.
 
-      After installation, open the web UI to create your admin account, configure your usenet provider, and set WebDAV credentials. For full Radarr/Sonarr integration with Rclone, see the setup guide in the project documentation.
-    zh_CN: |
-      NzbDav 是一个 WebDAV 服务器，可让您将 NZB 文件挂载为虚拟文件系统而无需先下载。它提供与 SABnzbd 兼容的 API，可与 Sonarr、Radarr、Plex 和 Jellyfin 集成，直接从 Usenet 提供商流式传输内容。
-
-      安装后，打开网页界面创建管理员账户、配置 Usenet 提供商并设置 WebDAV 凭据。如需完整的 Radarr/Sonarr 与 Rclone 集成，请参阅项目文档中的设置指南。
+      After installation, open the web UI to create your admin account, configure your usenet provider, and set WebDAV credentials.
   developer: NzbDav
   docs: https://github.com/killamfkr/nzbdav/blob/main/docs/setup-guide.md
   icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
   index: /
   main: nzbdav
-  port_map: ${WEBUI_PORT:-3000}
+  port_map: "3000"
   repo: https://github.com/killamfkr/nzbdav
   screenshot_link:
     - https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/screenshot-1.png
   support: https://github.com/killamfkr/nzbdav/issues
   tagline:
     en_US: Stream usenet content over WebDAV without local storage
-    zh_CN: 通过 WebDAV 流式传输 Usenet 内容，无需本地存储
   tips:
     before_install:
       en_US: |
-        **First-time setup**
-
-        1. After install, open the web UI and create your admin username and password.
-        2. Go to **Settings → Usenet** and enter your usenet provider details.
-        3. Go to **Settings → WebDAV** and set a WebDAV username and password.
-
-        **Radarr/Sonarr users:** The `/mnt` volume maps to `/DATA/remote` on your CasaOS server. Use this path when configuring Rclone mounts. See the [setup guide](https://github.com/killamfkr/nzbdav/blob/main/docs/setup-guide.md) for the full infinite-library workflow.
-      zh_CN: |
-        **首次设置**
-
-        1. 安装后打开网页界面，创建管理员用户名和密码。
-        2. 进入 **Settings → Usenet**，填写 Usenet 提供商信息。
-        3. 进入 **Settings → WebDAV**，设置 WebDAV 用户名和密码。
-
-        **Radarr/Sonarr 用户：** `/mnt` 卷映射到 CasaOS 服务器上的 `/DATA/remote`。配置 Rclone 挂载时请使用此路径。完整流程请参阅[设置指南](https://github.com/killamfkr/nzbdav/blob/main/docs/setup-guide.md)。
+        After install, open the web UI and:
+        1. Create your admin username and password
+        2. Go to Settings → Usenet and enter your provider details
+        3. Go to Settings → WebDAV and set a WebDAV username and password
   title:
     en_US: NzbDav
   version: "0.6.4"

@@ -1,43 +1,30 @@
-# NzbDav CasaOS App Store
+# NzbDav on CasaOS
 
-This directory contains a [CasaOS](https://casaos.io/) app definition for one-click installation of NzbDav on Ubuntu servers running CasaOS.
+Install NzbDav on CasaOS by importing a Docker Compose file.
 
-## Quick install on CasaOS
+## Quick install
 
-1. Open **App Store** in the CasaOS web UI.
-2. Click the **⋮** menu (top right) → **Import a Zip or URL**.
-3. Paste this URL:
+1. **App Store** → **Install a customized app**
+2. Click **Import** (top-right of the compose editor)
+3. Paste the contents of:
 
    ```
-   https://github.com/killamfkr/nzbdav/archive/refs/heads/main.zip
+   https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml
    ```
 
-4. Find **NzbDav** in the store and click **Install**.
-5. After install, open the app and complete first-time setup (admin account, usenet provider, WebDAV credentials).
+4. Click **Install**
 
-For step-by-step instructions and Radarr/Sonarr integration, see [docs/casaos-install.md](../docs/casaos-install.md).
+Full instructions: [docs/casaos-install.md](../docs/casaos-install.md)
 
-## Directory layout
+## Files
 
 ```
-Apps/
-└── NzbDav/
-    ├── docker-compose.yml   # CasaOS compose app with x-casaos metadata
-    ├── icon.png             # 192×192 app icon
-    └── screenshot-1.png     # 1280×720 screenshot
-recommend-list.json          # Shows NzbDav in recommended apps (repo root)
+Apps/NzbDav/
+├── docker-compose.yml   # Paste this into CasaOS
+├── icon.png
+└── screenshot-1.png
 ```
 
 ## Updating the image version
 
-When a new NzbDav release is published, update the image tag in [`Apps/NzbDav/docker-compose.yml`](../Apps/NzbDav/docker-compose.yml):
-
-```yaml
-image: nzbdav/nzbdav:0.6.4
-```
-
-Also update the `version` field in the `x-casaos` block at the bottom of the same file.
-
-## Submitting to the official CasaOS App Store
-
-To list NzbDav in the [official CasaOS App Store](https://github.com/IceWhaleTech/CasaOS-AppStore), open a pull request there with the contents of `Apps/NzbDav/` following their [contributing guide](https://github.com/IceWhaleTech/CasaOS-AppStore/blob/main/CONTRIBUTING.md).
+When a new release is published, update the image tag in [`Apps/NzbDav/docker-compose.yml`](../Apps/NzbDav/docker-compose.yml) and the `version` field in the `x-casaos` block.
