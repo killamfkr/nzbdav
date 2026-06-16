@@ -120,14 +120,11 @@ x-casaos:
   tips:
     before_install:
       en_US: |
-        This stack runs NzbDav plus an Rclone sidecar.
+        Recommended: use the one-command installer instead of manual compose import:
 
-        After install you must:
-        1. Set up NzbDav (admin account, usenet, WebDAV password)
-        2. Create `/DATA/AppData/nzbdav/rclone.conf` on the server
-        3. Restart the app so Rclone can mount
+        curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo bash
 
-        See the CasaOS install guide for the rclone.conf template.
+        It installs NzbDav + Rclone, generates rclone.conf, and configures everything automatically.
   title:
     en_US: NzbDav
   version: "0.6.4"
