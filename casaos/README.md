@@ -13,6 +13,9 @@ Install NzbDav on CasaOS by importing a Docker Compose file.
    ```
 
 4. Click **Install**
+5. Configure NzbDav, then create `/DATA/AppData/nzbdav/rclone.conf` (see install guide)
+
+This stack runs **NzbDav + Rclone sidecar**. Rclone will not work until you create `rclone.conf`.
 
 Full instructions: [docs/casaos-install.md](../docs/casaos-install.md)
 
@@ -20,7 +23,8 @@ Full instructions: [docs/casaos-install.md](../docs/casaos-install.md)
 
 ```
 Apps/NzbDav/
-├── docker-compose.yml   # Paste this into CasaOS
+├── docker-compose.yml      # NzbDav + Rclone sidecar — paste into CasaOS
+├── rclone.conf.example     # Template for /DATA/AppData/nzbdav/rclone.conf
 ├── icon.png
 └── screenshot-1.png
 ```

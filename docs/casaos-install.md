@@ -1,6 +1,6 @@
 # Installing NzbDav on CasaOS
 
-This guide installs NzbDav on an Ubuntu server running [CasaOS](https://casaos.io/) by pasting a Docker Compose file.
+This guide installs NzbDav **with the Rclone sidecar** on an Ubuntu server running [CasaOS](https://casaos.io/).
 
 ## Prerequisites
 
@@ -13,8 +13,8 @@ This guide installs NzbDav on an Ubuntu server running [CasaOS](https://casaos.i
 
 1. Log in to your CasaOS dashboard (`http://<your-server-ip>`).
 2. Open **App Store**.
-3. Click **Install a customized app** (or **Custom Install**).
-4. Click the **Import** button in the top-right corner of the compose editor.
+3. Click **Install a customized app**.
+4. Click **Import** (top-right of the compose editor).
 
 ### Step 2: Paste the compose file
 
@@ -24,140 +24,112 @@ Copy the compose file from this URL and paste it into the text box:
 https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml
 ```
 
-Or open that link in a browser, copy all the YAML, and paste it into CasaOS.
-
 Click **Submit** / **OK**, then **Install**.
 
-### Step 3: First-time configuration
+This installs two containers:
+- **nzbdav** — WebDAV server and web UI
+- **nzbdav_rclone** — mounts the WebDAV share to your filesystem
 
-1. Open NzbDav from the CasaOS dashboard (or go to `http://<your-server-ip>:3000`).
-2. **Create admin account** — set your login username and password.
-3. **Usenet settings** (`Settings` → `Usenet`):
-   - Host, port, username, and password from your usenet provider
-   - Set max connections to your provider's limit
-4. **WebDAV settings** (`Settings` → `WebDAV`):
-   - Set a WebDAV username and password
+### Step 3: Configure NzbDav
 
-## Copy-paste compose file
+1. Open NzbDav at `http://<your-server-ip>:3000`.
+2. Create your **admin account**.
+3. **Settings → Usenet** — enter your usenet provider details.
+4. **Settings → WebDAV** — set a WebDAV **username** and **password** (remember these).
 
-If you prefer to copy directly from here:
+### Step 4: Configure Rclone
 
-```yaml
-name: nzbdav
-services:
-  nzbdav:
-    cpu_shares: 90
-    container_name: nzbdav
-    deploy:
-      resources:
-        reservations:
-          memory: "512M"
-    environment:
-      PGID: $PGID
-      PUID: $PUID
-      TZ: $TZ
-    healthcheck:
-      test: curl -f http://localhost:3000/health || exit 1
-      interval: 1m
-      retries: 3
-      start_period: 30s
-      timeout: 10s
-    image: nzbdav/nzbdav:0.6.4
-    labels:
-      icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
-    network_mode: bridge
-    ports:
-      - target: 3000
-        published: "3000"
-        protocol: tcp
-    restart: unless-stopped
-    volumes:
-      - type: bind
-        source: /DATA/AppData/nzbdav/config
-        target: /config
-      - type: bind
-        source: /DATA/remote
-        target: /mnt
-    x-casaos:
-      envs:
-        - container: TZ
-          description:
-            en_US: Time zone
-        - container: PUID
-          description:
-            en_US: User ID
-        - container: PGID
-          description:
-            en_US: Group ID
-      ports:
-        - container: "3000"
-          description:
-            en_US: Web UI and WebDAV port
-      volumes:
-        - container: /config
-          description:
-            en_US: Config and database
-        - container: /mnt
-          description:
-            en_US: Rclone mount point
-x-casaos:
-  architectures:
-    - amd64
-    - arm64
-  author: NzbDav
-  category: Media
-  description:
-    en_US: WebDAV server for streaming usenet content. SABnzbd-compatible API for Sonarr/Radarr.
-  developer: NzbDav
-  icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
-  index: /
-  main: nzbdav
-  port_map: "3000"
-  tagline:
-    en_US: Stream usenet content over WebDAV without local storage
-  title:
-    en_US: NzbDav
-  version: "0.6.4"
+Rclone needs a config file before it can mount. SSH into your server (or use CasaOS terminal):
+
+**1. Generate an obscured password** (replace with your WebDAV password from step 3):
+
+```bash
+docker run --rm rclone/rclone:1.74.3 obscure "YOUR_WEBDAV_PASSWORD"
 ```
 
-> **Port already in use?** Change `published: "3000"` to another port (e.g. `"3001"`) and update `port_map: "3001"` at the bottom.
+Copy the output (starts with something like `obscure-token...`).
+
+**2. Create the config file:**
+
+```bash
+mkdir -p /DATA/AppData/nzbdav
+nano /DATA/AppData/nzbdav/rclone.conf
+```
+
+Paste this and replace the placeholders:
+
+```ini
+[nzbdav]
+type = webdav
+url = http://nzbdav:3000/
+vendor = other
+user = YOUR_WEBDAV_USERNAME
+pass = PASTE_OBSCURED_PASSWORD_HERE
+```
+
+Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X` in nano).
+
+**3. Create the mount directory:**
+
+```bash
+mkdir -p /DATA/remote/nzbdav
+```
+
+**4. Restart the app** from CasaOS (or restart just the rclone container):
+
+```bash
+docker restart nzbdav_rclone
+```
+
+**5. Verify the mount:**
+
+```bash
+ls -la /DATA/remote/nzbdav
+```
+
+You should see folders like `.ids`, `completed-symlinks`, `content`, and `nzbs`.
+
+### Step 5: Point NzbDav at the mount
+
+In NzbDav **Settings → SABnzbd**:
+
+- **Rclone Mount Directory:** `/mnt/remote/nzbdav`
 
 ## Data locations
 
 | Path on server | Purpose |
 |---|---|
-| `/DATA/AppData/nzbdav/config` | Settings, database, and persistent config |
-| `/DATA/remote` | Rclone mount point (`/mnt` inside the container) |
+| `/DATA/AppData/nzbdav/config` | NzbDav settings and database |
+| `/DATA/AppData/nzbdav/rclone.conf` | Rclone WebDAV credentials |
+| `/DATA/remote/nzbdav` | Mounted WebDAV files (symlinks, streams) |
 
-CasaOS creates these folders on first start. Config is kept if you uninstall with **keep user data** enabled.
+## Radarr / Sonarr / Plex
 
-## Radarr / Sonarr / Plex integration
-
-For the full infinite-library setup with Rclone, see the [comprehensive setup guide](setup-guide.md).
-
-- Use `/DATA/remote` on the host for Rclone mounts
-- Point Radarr/Sonarr to NzbDav at `http://<server-ip>:3000` as a SABnzbd download client
+- **Download client:** SABnzbd → host `nzbdav`, port `3000`, API key from NzbDav Settings → SABnzbd
+- **Library import path:** `/DATA/remote/nzbdav/completed-symlinks/...` (or your symlink folder)
+- Full workflow: [comprehensive setup guide](setup-guide.md)
 
 ## Updating
 
 1. Open the NzbDav app in CasaOS → **Settings** → **Compose**.
-2. Change the image tag (e.g. `nzbdav/nzbdav:0.6.4` → newer version).
-3. Save and restart the app.
+2. Update image tags if needed (`nzbdav/nzbdav:0.6.4`, `rclone/rclone:1.74.3`).
+3. Save and restart.
 
 ## Troubleshooting
 
 | Issue | Solution |
 |---|---|
-| App won't start | Check logs in CasaOS. Ensure port 3000 is free or change the published port. |
-| Permission errors | Run `id` over SSH and match PUID/PGID in the compose file if needed. |
-| Blank tile / no icon | The `labels.icon` line sets the dashboard icon; check your server can reach GitHub. |
-| Radarr/Sonarr can't connect | Use the server LAN IP, not `localhost`, from other containers. |
+| `nzbdav_rclone` keeps restarting | `rclone.conf` is missing or wrong. Check WebDAV username and obscured password. |
+| Mount folder is empty | Ensure NzbDav is healthy first. Run `docker logs nzbdav_rclone`. |
+| Permission denied on mount | Match `--uid` / `--gid` in the compose file to your user (`id` over SSH). Default is `1000`. |
+| Radarr/Sonarr can't see files | Point library imports at `/DATA/remote/nzbdav/completed-symlinks`. |
+| Port 3000 in use | Change `published: "3000"` and `port_map: "3000"` to another port. |
 
-## SSH install (alternative)
+## Already installed without Rclone?
 
-```bash
-mkdir -p /DATA/AppData/nzbdav/config /DATA/remote
-curl -fsSL -o /tmp/nzbdav-compose.yml \
-  https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml
-docker compose -f /tmp/nzbdav-compose.yml up -d
-```
+If you installed an older compose file with only the `nzbdav` service:
+
+1. Open the app in CasaOS → **Settings** → **Compose**.
+2. Replace the entire compose file with the current version from the URL above.
+3. Follow **Step 4** to create `rclone.conf`.
+4. Save and restart.

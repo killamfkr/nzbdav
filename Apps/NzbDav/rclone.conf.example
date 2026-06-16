@@ -1,0 +1,6 @@
+[nzbdav]
+type = webdav
+url = http://nzbdav:3000/
+vendor = other
+user = YOUR_WEBDAV_USERNAME
+pass = YOUR_OBSCURED_PASSWORD

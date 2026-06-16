@@ -55,7 +55,7 @@ On [CasaOS](https://casaos.io/), go to **App Store → Install a customized app 
 https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml
 ```
 
-See the [CasaOS install guide](docs/casaos-install.md) for step-by-step instructions.
+This installs NzbDav and an Rclone sidecar. After setup, create `/DATA/AppData/nzbdav/rclone.conf` so Rclone can mount the WebDAV share. See the [CasaOS install guide](docs/casaos-install.md) for step-by-step instructions.
 
 <p align="center">
     <img width="600" alt="settings-page" src="https://github.com/user-attachments/assets/91175920-5a7b-4a93-906d-b8432f35c809" />

@@ -20,19 +20,16 @@ services:
     image: nzbdav/nzbdav:0.6.4
     labels:
       icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
-    network_mode: bridge
+    networks:
+      - nzbdav
     ports:
       - target: 3000
         published: "3000"
         protocol: tcp
     restart: unless-stopped
     volumes:
-      - type: bind
-        source: /DATA/AppData/nzbdav/config
-        target: /config
-      - type: bind
-        source: /DATA/remote
-        target: /mnt
+      - /DATA/AppData/nzbdav/config:/config
+      - /DATA/remote:/mnt/remote:rshared
     x-casaos:
       envs:
         - container: TZ
@@ -52,9 +49,51 @@ services:
         - container: /config
           description:
             en_US: NzbDav configuration and database.
-        - container: /mnt
+        - container: /mnt/remote
           description:
-            en_US: Mount point for Rclone remote storage (used with Radarr/Sonarr).
+            en_US: Rclone mount root (WebDAV files appear under /mnt/remote/nzbdav).
+  nzbdav_rclone:
+    cap_add:
+      - SYS_ADMIN
+    container_name: nzbdav_rclone
+    cpu_shares: 90
+    depends_on:
+      nzbdav:
+        condition: service_healthy
+        restart: true
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    environment:
+      PGID: $PGID
+      PUID: $PUID
+      TZ: $TZ
+    image: rclone/rclone:1.74.3
+    networks:
+      - nzbdav
+    restart: unless-stopped
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /DATA/remote:/mnt/remote:rshared
+      - /DATA/AppData/nzbdav/rclone.conf:/config/rclone/rclone.conf
+    command:
+      - mount
+      - nzbdav:
+      - /mnt/remote/nzbdav
+      - --allow-other
+      - --links
+      - --use-cookies
+      - --vfs-cache-mode=full
+      - --vfs-cache-max-size=20G
+      - --vfs-cache-max-age=24h
+      - --buffer-size=0M
+      - --vfs-read-ahead=512M
+      - --dir-cache-time=20s
+      - --uid=1000
+      - --gid=1000
+networks:
+  nzbdav:
+    driver: bridge
 x-casaos:
   architectures:
     - amd64
@@ -63,11 +102,11 @@ x-casaos:
   category: Media
   description:
     en_US: |
-      NzbDav is a WebDAV server that lets you mount and browse NZB files as a virtual file system without downloading them first. It provides a SABnzbd-compatible API and integrates with Sonarr, Radarr, Plex, and Jellyfin.
+      NzbDav is a WebDAV server that streams usenet content without local storage. This stack includes an Rclone sidecar that mounts the WebDAV share to /DATA/remote/nzbdav on your server for Radarr, Sonarr, and Plex.
 
-      After installation, open the web UI to create your admin account, configure your usenet provider, and set WebDAV credentials.
+      After install: configure NzbDav, then create /DATA/AppData/nzbdav/rclone.conf (see install guide).
   developer: NzbDav
-  docs: https://github.com/killamfkr/nzbdav/blob/main/docs/setup-guide.md
+  docs: https://github.com/killamfkr/nzbdav/blob/main/docs/casaos-install.md
   icon: https://cdn.jsdelivr.net/gh/killamfkr/nzbdav@main/Apps/NzbDav/icon.png
   index: /
   main: nzbdav
@@ -81,10 +120,14 @@ x-casaos:
   tips:
     before_install:
       en_US: |
-        After install, open the web UI and:
-        1. Create your admin username and password
-        2. Go to Settings → Usenet and enter your provider details
-        3. Go to Settings → WebDAV and set a WebDAV username and password
+        This stack runs NzbDav plus an Rclone sidecar.
+
+        After install you must:
+        1. Set up NzbDav (admin account, usenet, WebDAV password)
+        2. Create `/DATA/AppData/nzbdav/rclone.conf` on the server
+        3. Restart the app so Rclone can mount
+
+        See the CasaOS install guide for the rclone.conf template.
   title:
     en_US: NzbDav
   version: "0.6.4"
