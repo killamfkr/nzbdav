@@ -1,16 +1,13 @@
 # NzbDav on CasaOS
 
-## One-command install
+Install guide: **[scripts/README.md](../scripts/README.md)**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo \
+  NZBDAV_ADMIN_PASS='your-admin-password' \
+  NZBDAV_WEBDAV_PASS='your-webdav-password' \
+  USENET_HOST='news.newshosting.com' \
+  USENET_USER='your-usenet-user' \
+  USENET_PASS='your-usenet-pass' \
+  bash
 ```
-
-See [docs/casaos-install.md](../docs/casaos-install.md) for non-interactive options and troubleshooting.
-
-## Manual compose import
-
-Only use this if you cannot run the install script. You must still create `rclone.conf` yourself.
-
-1. **App Store** → **Install a customized app** → **Import**
-2. Paste: `https://raw.githubusercontent.com/killamfkr/nzbdav/main/Apps/NzbDav/docker-compose.yml`

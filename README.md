@@ -49,13 +49,11 @@ After starting the container, be sure to navigate to the Settings page on the UI
 
 ### CasaOS (Ubuntu home server)
 
-**One command** — installs NzbDav, Rclone, config, and mount:
+**One command** — installs NzbDav, Rclone, config, and mount. See **[scripts/README.md](scripts/README.md)** for the full guide.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo NZBDAV_ADMIN_PASS='your-admin-password' NZBDAV_WEBDAV_PASS='your-webdav-password' USENET_HOST='news.newshosting.com' USENET_USER='your-usenet-user' USENET_PASS='your-usenet-pass' bash
 ```
-
-See the [CasaOS install guide](docs/casaos-install.md) for non-interactive install and troubleshooting.
 
 <p align="center">
     <img width="600" alt="settings-page" src="https://github.com/user-attachments/assets/91175920-5a7b-4a93-906d-b8432f35c809" />
