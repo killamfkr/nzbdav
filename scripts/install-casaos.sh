@@ -92,28 +92,40 @@ prompt() {
 }
 
 detect_ids() {
-  if [[ -z "${PUID:-}" || -z "${PGID:-}" ]]; then
-    local user=""
-    if [[ -n "${SUDO_USER:-}" && "$SUDO_USER" != "root" ]]; then
-      user="$SUDO_USER"
-    elif id casaos >/dev/null 2>&1; then
-      user="casaos"
-    elif id ubuntu >/dev/null 2>&1; then
-      user="ubuntu"
-    fi
-    if [[ -n "$user" ]]; then
-      PUID="$(id -u "$user")"
-      PGID="$(id -g "$user")"
-    else
-      PUID="$(id -u)"
-      PGID="$(id -g)"
-    fi
+  if [[ -n "${PUID:-}" && -n "${PGID:-}" ]]; then
+    export PUID PGID
+    return
   fi
+
+  local user=""
+  local candidates=()
+
+  [[ -n "${SUDO_USER:-}" ]] && candidates+=("$SUDO_USER")
+  [[ -n "${LOGNAME:-}" ]] && candidates+=("$LOGNAME")
+  candidates+=("$(stat -c '%U' /DATA 2>/dev/null || true)")
+  candidates+=("$(stat -c '%U' /DATA/AppData 2>/dev/null || true)")
+  candidates+=("casaos" "tower" "ubuntu")
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -n "$candidate" && "$candidate" != "root" ]] && id "$candidate" >/dev/null 2>&1; then
+      user="$candidate"
+      break
+    fi
+  done
+
+  if [[ -n "$user" ]]; then
+    PUID="$(id -u "$user")"
+    PGID="$(id -g "$user")"
+  else
+    PUID=1000
+    PGID=1000
+  fi
+
   if [[ "$PUID" -eq 0 ]]; then
     PUID=1000
     PGID=1000
-    warn "Could not detect non-root user — defaulting PUID/PGID to 1000/1000"
   fi
+
   export PUID PGID
 }
 
@@ -186,6 +198,9 @@ echo "  Install dir : $INSTALL_DIR"
 echo "  Web UI port : $WEBUI_PORT"
 echo "  PUID/PGID   : $PUID/$PGID"
 echo "  Timezone    : $TZ"
+if [[ -n "${SUDO_USER:-}" ]]; then
+  echo "  Run as user : $SUDO_USER (via sudo)"
+fi
 echo
 
 # Credentials
@@ -247,20 +262,19 @@ RCLONE_IMAGE=rclone/rclone:${RCLONE_VERSION}
 EOF
 chmod 600 "$INSTALL_DIR/.env"
 
-cat >"$INSTALL_DIR/docker-compose.yml" <<'EOF'
+NZBDAV_IMAGE="nzbdav/nzbdav:${NZBDAV_VERSION}"
+RCLONE_IMAGE="rclone/rclone:${RCLONE_VERSION}"
+
+# Use a folded string for rclone command — CasaOS compose rejects array entries like "nzbdav:"
+cat >"$INSTALL_DIR/docker-compose.yml" <<EOF
 name: nzbdav
 services:
   nzbdav:
     container_name: nzbdav
     image: ${NZBDAV_IMAGE}
     restart: unless-stopped
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      FRONTEND_BACKEND_API_KEY: ${FRONTEND_BACKEND_API_KEY}
-      WEBDAV_USER: ${WEBDAV_USER}
-      WEBDAV_PASSWORD: ${WEBDAV_PASSWORD}
+    env_file:
+      - .env
     ports:
       - "${WEBUI_PORT}:3000"
     volumes:
@@ -280,36 +294,31 @@ services:
     image: ${RCLONE_IMAGE}
     restart: unless-stopped
     depends_on:
-      nzbdav:
-        condition: service_healthy
+      - nzbdav
     cap_add:
       - SYS_ADMIN
     security_opt:
       - apparmor:unconfined
     devices:
       - /dev/fuse:/dev/fuse:rwm
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
+    env_file:
+      - .env
     volumes:
       - /DATA/remote:/mnt/remote:rshared
       - ${INSTALL_DIR}/rclone.conf:/config/rclone/rclone.conf
-    command:
-      - mount
-      - "nzbdav:"
-      - /mnt/remote/nzbdav
-      - --allow-other
-      - --links
-      - --use-cookies
-      - --vfs-cache-mode=full
-      - --vfs-cache-max-size=20G
-      - --vfs-cache-max-age=24h
-      - --buffer-size=0M
-      - --vfs-read-ahead=512M
-      - --dir-cache-time=20s
-      - --uid=${PUID}
-      - --gid=${PGID}
+    command: >-
+      mount nzbdav: /mnt/remote/nzbdav
+      --allow-other
+      --links
+      --use-cookies
+      --vfs-cache-mode=full
+      --vfs-cache-max-size=20G
+      --vfs-cache-max-age=24h
+      --buffer-size=0M
+      --vfs-read-ahead=512M
+      --dir-cache-time=20s
+      --uid=${PUID}
+      --gid=${PGID}
     networks:
       - nzbdav
 
@@ -318,9 +327,7 @@ networks:
     driver: bridge
 EOF
 
-# docker-compose doesn't expand INSTALL_DIR in volumes from .env by default for custom vars
-# Patch the generated compose to use the actual install dir
-sed -i "s|\${INSTALL_DIR}|${INSTALL_DIR}|g" "$INSTALL_DIR/docker-compose.yml"
+chmod 644 "$INSTALL_DIR/docker-compose.yml"
 
 log "Pulling images..."
 (cd "$INSTALL_DIR" && "${COMPOSE[@]}" -p "$COMPOSE_PROJECT_NAME" down --remove-orphans) 2>/dev/null || true
