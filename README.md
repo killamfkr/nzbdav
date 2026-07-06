@@ -47,9 +47,12 @@ docker run --rm -it \
 ```
 After starting the container, be sure to navigate to the Settings page on the UI to finish setting up your usenet connection settings.
 
-### CasaOS (Ubuntu home server)
+### CasaOS / ZimaOS
 
-**One command** — installs NzbDav, Rclone, config, and mount. See **[scripts/README.md](scripts/README.md)** for the full guide.
+**One command** — installs NzbDav, Rclone, config, and mount.
+
+- CasaOS: **[scripts/README.md](scripts/README.md)**
+- ZimaOS: **[docs/zimaos-install.md](docs/zimaos-install.md)** (same script; manual compose files included)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo NZBDAV_ADMIN_PASS='your-admin-password' NZBDAV_WEBDAV_PASS='your-webdav-password' USENET_HOST='news.newshosting.com' USENET_USER='your-usenet-user' USENET_PASS='your-usenet-pass' bash
@@ -76,7 +79,7 @@ You'll also want to set up a username and password for logging in to the webdav 
 # Comprehensive Setup Guide
 
 If you'd like to get the most out of NzbDav, check out the [comprehensive guide](docs/setup-guide.md) for detailed instructions covering:
-* **CasaOS:** One-click install — [scripts/README.md](scripts/README.md)
+* **CasaOS / ZimaOS:** One-click install — [scripts/README.md](scripts/README.md) · [ZimaOS guide](docs/zimaos-install.md)
 * **Unraid:** One-click install — [scripts/README-unraid.md](scripts/README-unraid.md)
 * **Docker Compose:** Full stack with Rclone sidecar and healthchecks.
 * **Performance Tuning:** Benchmarking WebDAV connection limits.
