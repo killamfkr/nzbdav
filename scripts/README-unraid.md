@@ -186,4 +186,5 @@ Safe to run the install command again. The script recreates containers from scra
 ## See also
 
 - [CasaOS installer](README.md)
+- [ZimaOS installer](README-zimaos.md)
 - [Full NzbDav setup guide](../docs/setup-guide.md)

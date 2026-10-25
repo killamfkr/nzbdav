@@ -194,4 +194,5 @@ Then run the install command again.
 ## See also
 
 - [Unraid installer](README-unraid.md)
+- [ZimaOS installer](README-zimaos.md)
 - [Full NzbDav setup guide](../docs/setup-guide.md)

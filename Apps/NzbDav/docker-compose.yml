@@ -122,6 +122,8 @@ x-casaos:
 
         curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo bash
 
+        ZimaOS: use install-zimaos.sh (same stack, plus FUSE host prep).
+
         It installs NzbDav + Rclone, generates rclone.conf, and configures everything automatically.
   title:
     en_US: NzbDav
