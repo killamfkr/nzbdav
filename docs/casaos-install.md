@@ -1,5 +1,7 @@
 # Installing NzbDav on CasaOS
 
+Also works on **[ZimaOS](../docs/zimaos-install.md)** (same `/DATA` paths and install script).
+
 See **[scripts/README.md](../scripts/README.md)** for the full install guide, including the non-interactive one-liner.
 
 ## Quick start

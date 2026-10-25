@@ -1,6 +1,6 @@
-# NzbDav CasaOS Installer
+# NzbDav CasaOS / ZimaOS Installer
 
-One-command installer for **NzbDav + Rclone** on Ubuntu servers running [CasaOS](https://casaos.io/).
+One-command installer for **NzbDav + Rclone** on [CasaOS](https://casaos.io/) and [ZimaOS](https://www.zimaspace.com/) (same `/DATA` paths). ZimaOS-specific compose files: [docs/zimaos-install.md](../docs/zimaos-install.md).
 
 The script installs both containers, generates `rclone.conf`, creates your admin account, configures WebDAV and usenet, and mounts the WebDAV share at `/DATA/remote/nzbdav`. No manual compose editing required.
 
@@ -186,12 +186,13 @@ Then run the install command again.
 
 ## Requirements
 
-- Ubuntu server with [CasaOS](https://casaos.io/) (or Docker + `/DATA` directory)
+- [CasaOS](https://casaos.io/), [ZimaOS](https://www.zimaspace.com/), or any Docker host with a `/DATA` directory
 - Docker and Docker Compose
 - Root access (`sudo`)
 - Usenet provider account (can be added later via the UI)
 
 ## See also
 
+- [ZimaOS install guide](../docs/zimaos-install.md)
 - [Unraid installer](README-unraid.md)
 - [Full NzbDav setup guide](../docs/setup-guide.md)

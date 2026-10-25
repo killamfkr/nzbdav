@@ -1,0 +1,79 @@
+# NzbDav + Rclone for ZimaOS (manual install)
+#
+# Before deploying:
+#   1. mkdir -p /DATA/AppData/nzbdav/config /DATA/remote/nzbdav
+#   2. Create /DATA/AppData/nzbdav/.env (see .env.zimaos.example)
+#   3. Create /DATA/AppData/nzbdav/rclone.conf (see rclone.conf.example)
+#   4. Match --uid/--gid in nzbdav_rclone command to PUID/PGID in .env
+#
+# Deploy (recommended — keeps :rshared):
+#   cd /DATA/AppData/nzbdav && docker compose -f docker-compose.zimaos.yml up -d
+#
+# Guide: https://github.com/killamfkr/nzbdav/blob/main/docs/zimaos-install.md
+
+name: nzbdav
+services:
+  nzbdav:
+    container_name: nzbdav
+    image: nzbdav/nzbdav:0.6.4
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    ports:
+      - "${WEBUI_PORT:-3000}:3000"
+    volumes:
+      - /DATA/AppData/nzbdav/config:/config
+      - /DATA/remote:/mnt/remote:rshared
+    healthcheck:
+      test: curl -f http://localhost:3000/health || exit 1
+      interval: 30s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
+    networks:
+      - nzbdav
+
+  nzbdav_rclone:
+    container_name: nzbdav_rclone
+    image: rclone/rclone:1.74.3
+    restart: unless-stopped
+    depends_on:
+      - nzbdav
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    devices:
+      - /dev/fuse:/dev/fuse:rwm
+    env_file:
+      - .env
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - /DATA/remote:/mnt/remote:rshared
+      - /DATA/AppData/nzbdav/rclone.conf:/config/rclone/rclone.conf
+    command: >-
+      mount nzbdav: /mnt/remote/nzbdav
+      --allow-other
+      --links
+      --use-cookies
+      --vfs-cache-mode=full
+      --vfs-cache-max-size=20G
+      --vfs-cache-max-age=24h
+      --buffer-size=0M
+      --vfs-read-ahead=512M
+      --dir-cache-time=20s
+      --uid=1000
+      --gid=1000
+    networks:
+      - nzbdav
+
+networks:
+  nzbdav:
+    driver: bridge

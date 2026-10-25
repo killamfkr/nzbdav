@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Install NzbDav + Rclone on Ubuntu / CasaOS with one command.
+# Install NzbDav + Rclone on Ubuntu / CasaOS / ZimaOS with one command.
 #
 # One-liner:
 #   curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-casaos.sh | sudo bash
@@ -193,7 +193,7 @@ fi
 
 mkdir -p "$INSTALL_DIR/config" /DATA/remote/nzbdav
 
-log "NzbDav installer for Ubuntu / CasaOS"
+log "NzbDav installer for Ubuntu / CasaOS / ZimaOS"
 echo "  Install dir : $INSTALL_DIR"
 echo "  Web UI port : $WEBUI_PORT"
 echo "  PUID/PGID   : $PUID/$PGID"
