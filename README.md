@@ -77,6 +77,14 @@ curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/insta
 NZBDAV_ADMIN_PASS='your-admin-password' NZBDAV_WEBDAV_PASS='your-webdav-password' USENET_HOST='news.newshosting.com' USENET_USER='your-usenet-user' USENET_PASS='your-usenet-pass' bash <(curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-unraid.sh)
 ```
 
+### ZimaOS
+
+**One command** — see **[scripts/README-zimaos.md](scripts/README-zimaos.md)** (includes host FUSE setup for rclone).
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/killamfkr/nzbdav/main/scripts/install-zimaos.sh | sudo NZBDAV_ADMIN_PASS='your-admin-password' NZBDAV_WEBDAV_PASS='your-webdav-password' USENET_HOST='news.newshosting.com' USENET_USER='your-usenet-user' USENET_PASS='your-usenet-pass' bash
+```
+
 <p align="center">
     <img width="600" alt="settings-page" src="https://github.com/user-attachments/assets/91175920-5a7b-4a93-906d-b8432f35c809" />
 </p>
@@ -91,6 +99,7 @@ You'll also want to set up a username and password for logging in to the webdav 
 
 If you'd like to get the most out of NzbDav, check out the [comprehensive guide](docs/setup-guide.md) for detailed instructions covering:
 * **CasaOS:** One-click install — [scripts/README.md](scripts/README.md)
+* **ZimaOS:** One-click install — [scripts/README-zimaos.md](scripts/README-zimaos.md)
 * **Unraid:** One-click install — [scripts/README-unraid.md](scripts/README-unraid.md)
 * **Docker Compose:** Full stack with Rclone sidecar and healthchecks.
 * **Performance Tuning:** Benchmarking WebDAV connection limits.
