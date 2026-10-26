@@ -185,7 +185,7 @@ if [[ ! -d /mnt/user ]]; then
   die "/mnt/user not found. This script is for Unraid (or systems with /mnt/user appdata)."
 fi
 
-mkdir -p "$INSTALL_DIR/config" "$MOUNT_HOST_PATH/nzbdav"
+mkdir -p "$INSTALL_DIR/config" "$MOUNT_HOST_PATH"
 
 log "NzbDav installer for Unraid"
 echo "  Install dir : $INSTALL_DIR"
@@ -285,9 +285,12 @@ services:
     image: ${RCLONE_IMAGE}
     restart: unless-stopped
     depends_on:
-      - nzbdav
+      nzbdav:
+        condition: service_healthy
     cap_add:
       - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
     devices:
       - /dev/fuse:/dev/fuse:rwm
     env_file:
@@ -297,6 +300,7 @@ services:
       - ${INSTALL_DIR}/rclone.conf:/config/rclone/rclone.conf
     command: >-
       mount nzbdav: /mnt/remote/nzbdav
+      --allow-non-empty
       --allow-other
       --links
       --use-cookies

@@ -191,7 +191,7 @@ if [[ ! -d /DATA ]]; then
   mkdir -p "$(dirname "$INSTALL_DIR")"
 fi
 
-mkdir -p "$INSTALL_DIR/config" /DATA/remote/nzbdav
+mkdir -p "$INSTALL_DIR/config" /DATA/remote
 
 log "NzbDav installer for Ubuntu / CasaOS"
 echo "  Install dir : $INSTALL_DIR"
@@ -308,6 +308,7 @@ services:
       - ${INSTALL_DIR}/rclone.conf:/config/rclone/rclone.conf
     command: >-
       mount nzbdav: /mnt/remote/nzbdav
+      --allow-non-empty
       --allow-other
       --links
       --use-cookies
