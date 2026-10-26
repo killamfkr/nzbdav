@@ -191,7 +191,7 @@ if [[ ! -d /DATA ]]; then
   mkdir -p "$(dirname "$INSTALL_DIR")"
 fi
 
-mkdir -p "$INSTALL_DIR/config" /DATA/remote
+mkdir -p "$INSTALL_DIR/config" /DATA/remote /DATA/remote/nzbdav
 
 log "NzbDav installer for Ubuntu / CasaOS"
 echo "  Install dir : $INSTALL_DIR"

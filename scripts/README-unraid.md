@@ -173,7 +173,8 @@ Safe to run the install command again. The script recreates containers from scra
 | `/mnt/user not found` | Run on Unraid, not a generic Linux VM without user shares |
 | Docker Compose not found | Update to Unraid 6.12+ or install compose plugin |
 | Rclone keeps restarting | `docker logs nzbdav_rclone` — check WebDAV password |
-| `is not empty, use --allow-non-empty` | Stop `nzbdav_rclone`, remove leftover files under `mount/nzbdav` (or add `--allow-non-empty` to the rclone command), then recreate the container |
+| `is not empty, use --allow-non-empty` | Stop `nzbdav_rclone`, clear junk inside `mount/nzbdav` (keep the empty folder), ensure `--allow-non-empty` is in the rclone command, recreate |
+| `mountpoint does not exist` | `mkdir -p /mnt/user/appdata/nzbdav/mount/nzbdav` then recreate `nzbdav_rclone` |
 | Radarr can't reach NzbDav | Use Unraid server IP, or set `NZBDAV_EXTRA_NETWORK` |
 | Permission errors | Keep `PUID=99` and `PGID=100` (Unraid defaults) |
 | Port 3000 in use | Set `WEBUI_PORT=3001` before running |

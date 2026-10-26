@@ -185,7 +185,7 @@ if [[ ! -d /mnt/user ]]; then
   die "/mnt/user not found. This script is for Unraid (or systems with /mnt/user appdata)."
 fi
 
-mkdir -p "$INSTALL_DIR/config" "$MOUNT_HOST_PATH"
+mkdir -p "$INSTALL_DIR/config" "$MOUNT_HOST_PATH" "$MOUNT_HOST_PATH/nzbdav"
 
 log "NzbDav installer for Unraid"
 echo "  Install dir : $INSTALL_DIR"
