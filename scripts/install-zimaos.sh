@@ -200,7 +200,7 @@ ensure_fuse() {
 }
 
 ensure_shared_mount_root() {
-  mkdir -p "${REMOTE_ROOT}/nzbdav"
+  mkdir -p "${REMOTE_ROOT}" "${REMOTE_ROOT}/nzbdav"
   if command -v mount >/dev/null 2>&1; then
     mount --make-shared "$REMOTE_ROOT" 2>/dev/null \
       && ok "Mount propagation set on ${REMOTE_ROOT} (shared)" \
@@ -373,6 +373,7 @@ services:
       - ${INSTALL_DIR}/rclone.conf:/config/rclone/rclone.conf
     command: >-
       mount nzbdav: /mnt/remote/nzbdav
+      --allow-non-empty
       --allow-other
       --links
       --use-cookies
