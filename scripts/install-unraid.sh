@@ -331,6 +331,9 @@ fi
 
 chmod 644 "$INSTALL_DIR/docker-compose.yml"
 
+log "Preparing rclone mount point at ${MOUNT_HOST_PATH}/nzbdav..."
+mkdir -p "$MOUNT_HOST_PATH/nzbdav"
+
 log "Pulling images..."
 (cd "$INSTALL_DIR" && "${COMPOSE[@]}" -p "$COMPOSE_PROJECT_NAME" down --remove-orphans) 2>/dev/null || true
 docker rm -f nzbdav nzbdav_rclone 2>/dev/null || true
